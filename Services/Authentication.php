@@ -2,7 +2,11 @@
 
 namespace KskRemoteMaintenance\Services;
 
+use KskRemoteMaintenance\KskRemoteMaintenance;
 use Sabre\DAV\Auth\Backend\AbstractBasic;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\User\Role;
+use Shopware_Components_Acl;
 use Shopware_Components_Auth;
 
 /**
@@ -17,12 +21,29 @@ class Authentication extends AbstractBasic
     private $auth;
 
     /**
+     * @var Shopware_Components_Acl
+     */
+    private $acl;
+
+    /**
+     * @var ModelManager
+     */
+    private $modelManager;
+
+    /**
      * Authentication constructor.
      * @param Shopware_Components_Auth $auth
+     * @param Shopware_Components_Acl $acl
+     * @param ModelManager $modelManager
      */
-    public function __construct(Shopware_Components_Auth $auth)
-    {
+    public function __construct(
+        Shopware_Components_Auth $auth,
+        Shopware_Components_Acl $acl,
+        ModelManager $modelManager
+    ) {
         $this->auth = $auth;
+        $this->acl = $acl;
+        $this->modelManager = $modelManager;
     }
 
     /**
@@ -30,6 +51,12 @@ class Authentication extends AbstractBasic
      */
     protected function validateUserPass($username, $password)
     {
-        return $this->auth->isPasswordValid($username, $password);
+        if (!$this->auth->login($username, $password)->isValid()) {
+            return false;
+        }
+
+        /** @var Role $role */
+        $role = $this->modelManager->find(Role::class, $this->auth->getIdentity()->roleID);
+        return $this->acl->isAllowed($role->getName(), KskRemoteMaintenance::ACL_RESOURCE_NAME, 'webdav');
     }
 }

@@ -2,12 +2,14 @@
 
 namespace KskRemoteMaintenance;
 
+use Enlight_Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Shopware;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use Shopware_Components_Acl;
 use UnexpectedValueException;
 
 /**
@@ -28,6 +30,8 @@ RewriteRule ^(.*)$ shopware.php [PT,L,QSA]
 
 HTACCESS;
 
+    const ACL_RESOURCE_NAME = 'ksk_remote_maintenance';
+
     /**
      * @inheritdoc
      */
@@ -42,6 +46,7 @@ HTACCESS;
         }
 
         mkdir($this->getTemporaryDir());
+        $this->updateAcl();
     }
 
     /**
@@ -58,6 +63,7 @@ HTACCESS;
         }
 
         $this->removeTemporaryDir();
+        $this->deleteAcl();
     }
 
     /**
@@ -99,5 +105,35 @@ HTACCESS;
         }
 
         return rmdir($this->getTemporaryDir());
+    }
+
+    /**
+     * @return bool
+     */
+    protected function updateAcl()
+    {
+        /** @var Shopware_Components_Acl $acl */
+        $acl = $this->container->get('acl');
+
+        try {
+            $acl->createResource(static::ACL_RESOURCE_NAME, [
+                'webdav',
+            ]);
+        } catch (Enlight_Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function deleteAcl()
+    {
+        /** @var Shopware_Components_Acl $acl */
+        $acl = $this->container->get('acl');
+
+        return $acl->deleteResource(static::ACL_RESOURCE_NAME);
     }
 }

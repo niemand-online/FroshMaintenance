@@ -8,6 +8,8 @@
 
         <service id="ksk_remote_maintenance.services.authentication" class="KskRemoteMaintenance\Services\Authentication">
             <argument type="service" id="auth"/>
+            <argument type="service" id="acl"/>
+            <argument type="service" id="models"/>
         </service>
 
     </services>
