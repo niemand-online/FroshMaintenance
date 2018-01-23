@@ -1,5 +1,6 @@
 <?php
 
+use KskRemoteMaintenance\Services\Authentication;
 use Sabre\DAV;
 use Shopware\Components\CSRFWhitelistAware;
 
@@ -42,6 +43,13 @@ class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Control
         // This ensures that we get a pretty index in the browser, but it is
         // optional.
         $server->addPlugin(new DAV\Browser\Plugin());
+
+        /** @var Authentication $authBackend */
+        $authBackend = $this->get('ksk_remote_maintenance.services.authentication');
+        $authPlugin = new Dav\Auth\Plugin($authBackend);
+
+        // Adding the plugin to the server.
+        $server->addPlugin($authPlugin);
 
         // All we need to do now, is to fire up the server
         $server->exec();
