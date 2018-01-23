@@ -8,6 +8,9 @@ use Shopware\Components\CSRFWhitelistAware;
  */
 class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
+    /**
+     * @var string
+     */
     private $pluginDir;
 
     /**
@@ -32,7 +35,7 @@ class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Control
 
         // The lock manager is reponsible for making sure users don't overwrite
         // each others changes.
-        $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$this->pluginDir, 'data', 'locks']));
+        $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$this->pluginDir, '.tmp', 'locks']));
         $lockPlugin = new DAV\Locks\Plugin($lockBackend);
         $server->addPlugin($lockPlugin);
 
