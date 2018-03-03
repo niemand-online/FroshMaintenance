@@ -19,12 +19,11 @@ use UnexpectedValueException;
  */
 class KskRemoteMaintenance extends Plugin
 {
-    const HTACCESS_LIMITER_BEGIN = '# BEGIN KskRemoteMaintenance' . PHP_EOL;
+    const HTACCESS_LIMITER_BEGIN = '# BEGIN KskRemoteMaintenance';
 
     const HTACCESS_LIMITER_END = '# END KskRemoteMaintenance' . PHP_EOL . PHP_EOL;
 
-    const HTACCESS_PREPEND = <<<HTACCESS
-# BEGIN KskRemoteMaintenance
+    const HTACCESS_PREPEND = <<<'HTACCESS'
 <IfModule mod_env.c>
 SetEnvIf Request_URI "^.*webdav/index/index.*$" SHOPWARE_ENV=KSK_REMOTE_MAINTENANCE
 </IfModule>
@@ -33,9 +32,6 @@ RewriteEngine on
 RewriteCond %{REQUEST_URI} ^.*webdav/index/index.*$
 RewriteRule ^(.*)$ shopware.php [PT,L,QSA]
 </IfModule>
-# END KskRemoteMaintenance
-
-
 HTACCESS;
 
     const CUSTOM_CONFIG = <<<'CUSTOM_CONFIG'
@@ -49,7 +45,6 @@ return array_replace_recursive($config, [
     ],
 ]);
 CUSTOM_CONFIG;
-
 
     const ACL_RESOURCE_NAME = 'ksk_remote_maintenance';
 
@@ -85,13 +80,25 @@ CUSTOM_CONFIG;
         return $application->DocPath() . '.htaccess';
     }
 
+    /**
+     * @return string
+     */
+    protected function getHtaccessCustomContent()
+    {
+        return implode(PHP_EOL, [
+            static::HTACCESS_LIMITER_BEGIN,
+            static::HTACCESS_PREPEND,
+            static::HTACCESS_LIMITER_END,
+        ]);
+    }
+
     protected function alterHtaccessFile()
     {
         $htaccessFile = $this->getHtaccessFile();
         $htaccessContent = file_get_contents($htaccessFile);
 
-        if (strpos($htaccessContent, static::HTACCESS_PREPEND) === false) {
-            $htaccessContent = static::HTACCESS_PREPEND . $htaccessContent;
+        if (strpos($htaccessContent, $this->getHtaccessCustomContent()) === false) {
+            $htaccessContent = $this->getHtaccessCustomContent() . $htaccessContent;
             file_put_contents($htaccessFile, $htaccessContent);
         }
     }
@@ -148,9 +155,7 @@ CUSTOM_CONFIG;
         $acl = $this->container->get('acl');
 
         try {
-            $acl->createResource(static::ACL_RESOURCE_NAME, [
-                'webdav',
-            ]);
+            $acl->createResource(static::ACL_RESOURCE_NAME, ['webdav']);
         } catch (Enlight_Exception $e) {
             return false;
         }
