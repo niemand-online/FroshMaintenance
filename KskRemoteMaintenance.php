@@ -6,6 +6,7 @@ use Enlight_Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Shopware;
+use Shopware\Components\ConfigLoader;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
@@ -18,17 +19,37 @@ use UnexpectedValueException;
  */
 class KskRemoteMaintenance extends Plugin
 {
+    const HTACCESS_LIMITER_BEGIN = '# BEGIN KskRemoteMaintenance' . PHP_EOL;
+
+    const HTACCESS_LIMITER_END = '# END KskRemoteMaintenance' . PHP_EOL . PHP_EOL;
+
     const HTACCESS_PREPEND = <<<HTACCESS
 # BEGIN KskRemoteMaintenance
+<IfModule mod_env.c>
+SetEnvIf Request_URI "^.*webdav/index/index.*$" SHOPWARE_ENV=KSK_REMOTE_MAINTENANCE
+</IfModule>
 <IfModule mod_rewrite.c>
 RewriteEngine on
-RewriteCond %{REQUEST_URI} (\/KskRemoteMaintenance\/)
+RewriteCond %{REQUEST_URI} ^.*webdav/index/index.*$
 RewriteRule ^(.*)$ shopware.php [PT,L,QSA]
 </IfModule>
 # END KskRemoteMaintenance
 
 
 HTACCESS;
+
+    const CUSTOM_CONFIG = <<<'CUSTOM_CONFIG'
+<?php
+
+$config = include __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+
+return array_replace_recursive($config, [
+    'httpcache' => [
+        'enabled' => false,
+    ],
+]);
+CUSTOM_CONFIG;
+
 
     const ACL_RESOURCE_NAME = 'ksk_remote_maintenance';
 
@@ -37,15 +58,9 @@ HTACCESS;
      */
     public function install(InstallContext $context)
     {
-        $htaccessFile = $this->getHtaccessFile();
-        $htaccessContent = file_get_contents($htaccessFile);
-
-        if (strpos($htaccessContent, static::HTACCESS_PREPEND) === false) {
-            $htaccessContent = static::HTACCESS_PREPEND . $htaccessContent;
-            file_put_contents($htaccessFile, $htaccessContent);
-        }
-
+        $this->alterHtaccessFile();
         mkdir($this->getTemporaryDir());
+        $this->createConfig();
         $this->updateAcl();
     }
 
@@ -54,15 +69,9 @@ HTACCESS;
      */
     public function uninstall(UninstallContext $context)
     {
-        $htaccessFile = $this->getHtaccessFile();
-        $htaccessContent = file_get_contents($htaccessFile);
-
-        if (substr($htaccessContent, 0, strlen(static::HTACCESS_PREPEND)) === static::HTACCESS_PREPEND) {
-            $htaccessContent = substr($htaccessContent, strlen(static::HTACCESS_PREPEND));
-            file_put_contents($htaccessFile, $htaccessContent);
-        }
-
+        $this->restoreHtaccessFile();
         $this->removeTemporaryDir();
+        $this->removeConfig();
         $this->deleteAcl();
     }
 
@@ -74,6 +83,29 @@ HTACCESS;
         /** @var Shopware $application */
         $application = $this->container->get('application');
         return $application->DocPath() . '.htaccess';
+    }
+
+    protected function alterHtaccessFile()
+    {
+        $htaccessFile = $this->getHtaccessFile();
+        $htaccessContent = file_get_contents($htaccessFile);
+
+        if (strpos($htaccessContent, static::HTACCESS_PREPEND) === false) {
+            $htaccessContent = static::HTACCESS_PREPEND . $htaccessContent;
+            file_put_contents($htaccessFile, $htaccessContent);
+        }
+    }
+
+    protected function restoreHtaccessFile()
+    {
+        $htaccessFile = $this->getHtaccessFile();
+        $htaccessContent = file_get_contents($htaccessFile);
+
+        $begin = strpos($htaccessContent, static::HTACCESS_LIMITER_BEGIN);
+        $end = strpos($htaccessContent, static::HTACCESS_LIMITER_END) + strlen(static::HTACCESS_LIMITER_END);
+
+        $htaccessContent = substr($htaccessContent, 0, $begin) . substr($htaccessContent, $end);
+        file_put_contents($htaccessFile, $htaccessContent);
     }
 
     /**
@@ -135,5 +167,17 @@ HTACCESS;
         $acl = $this->container->get('acl');
 
         return $acl->deleteResource(static::ACL_RESOURCE_NAME);
+    }
+
+    protected function createConfig()
+    {
+        $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);
+        file_put_contents($file, static::CUSTOM_CONFIG);
+    }
+
+    protected function removeConfig()
+    {
+        $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);
+        unlink($file);
     }
 }

@@ -47,6 +47,7 @@ class Authentication extends AbstractBasic
     }
 
     /**
+     * TODO use api auth
      * @inheritdoc
      */
     protected function validateUserPass($username, $password)

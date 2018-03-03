@@ -2,12 +2,11 @@
 
 use KskRemoteMaintenance\Services\Authentication;
 use Sabre\DAV;
-use Shopware\Components\CSRFWhitelistAware;
 
 /**
- * Class Shopware_Controllers_Frontend_KskRemoteMaintenance
+ * Class Shopware_Controllers_Webdav_Index
  */
-class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Controller_Action implements CSRFWhitelistAware
+class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
 {
     /**
      * @var string
@@ -20,10 +19,12 @@ class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Control
     public function preDispatch()
     {
         $this->pluginDir = $this->container->getParameter('ksk_remote_maintenance.plugin_dir');
-        require_once implode(DIRECTORY_SEPARATOR, [$this->pluginDir, 'vendor', 'autoload.php']);
     }
 
-    public function webdavAction()
+    /**
+     * @throws DAV\Exception
+     */
+    public function indexAction()
     {
         $rootDirectory = new DAV\FS\Directory(Shopware()->DocPath());
 
@@ -32,17 +33,13 @@ class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Control
 
         // If your server is not on your webroot, make sure the following line has the
         // correct information
-        $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'KskRemoteMaintenance', 'webdav']));
+        $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'webdav', 'index', 'index']));
 
         // The lock manager is reponsible for making sure users don't overwrite
         // each others changes.
         $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$this->pluginDir, '.tmp', 'locks']));
         $lockPlugin = new DAV\Locks\Plugin($lockBackend);
         $server->addPlugin($lockPlugin);
-
-        // This ensures that we get a pretty index in the browser, but it is
-        // optional.
-        $server->addPlugin(new DAV\Browser\Plugin());
 
         /** @var Authentication $authBackend */
         $authBackend = $this->get('ksk_remote_maintenance.services.authentication');
@@ -55,15 +52,5 @@ class Shopware_Controllers_Frontend_KskRemoteMaintenance extends Enlight_Control
         $server->exec();
 
         die;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getWhitelistedCSRFActions()
-    {
-        return [
-            'webdav',
-        ];
     }
 }
