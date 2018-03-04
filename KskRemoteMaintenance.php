@@ -15,11 +15,11 @@ use Shopware_Components_Acl;
  */
 class KskRemoteMaintenance extends Plugin
 {
-    const HTACCESS_LIMITER_BEGIN = '# BEGIN KskRemoteMaintenance';
+    const HTACCESS_DELIMITER_BEGIN = '# BEGIN KskRemoteMaintenance';
 
-    const HTACCESS_LIMITER_END = '# END KskRemoteMaintenance' . PHP_EOL . PHP_EOL;
+    const HTACCESS_DELIMITER_END = '# END KskRemoteMaintenance' . PHP_EOL . PHP_EOL;
 
-    const HTACCESS_PREPEND = <<<'HTACCESS'
+    const HTACCESS_CUSTOM = <<<'HTACCESS'
 <IfModule mod_env.c>
 SetEnvIf Request_URI "^.*webdav/index/index.*$" SHOPWARE_ENV=KSK_REMOTE_MAINTENANCE
 </IfModule>
@@ -83,12 +83,12 @@ CUSTOM_CONFIG;
      *
      * @return string
      */
-    protected function getHtaccessCustomContent()
+    protected static function getHtaccessCustomContent()
     {
         return implode(PHP_EOL, [
-            static::HTACCESS_LIMITER_BEGIN,
-            static::HTACCESS_PREPEND,
-            static::HTACCESS_LIMITER_END,
+            static::HTACCESS_DELIMITER_BEGIN,
+            static::HTACCESS_CUSTOM,
+            static::HTACCESS_DELIMITER_END,
         ]);
     }
 
@@ -102,8 +102,8 @@ CUSTOM_CONFIG;
         $htaccessFile = $this->getHtaccessFile();
         $htaccessContent = file_get_contents($htaccessFile);
 
-        if (strpos($htaccessContent, $this->getHtaccessCustomContent()) === false) {
-            $htaccessContent = $this->getHtaccessCustomContent() . $htaccessContent;
+        if (strpos($htaccessContent, static::getHtaccessCustomContent()) === false) {
+            $htaccessContent = static::getHtaccessCustomContent() . $htaccessContent;
             file_put_contents($htaccessFile, $htaccessContent);
         }
     }
@@ -118,8 +118,8 @@ CUSTOM_CONFIG;
         $htaccessFile = $this->getHtaccessFile();
         $htaccessContent = file_get_contents($htaccessFile);
 
-        $begin = strpos($htaccessContent, static::HTACCESS_LIMITER_BEGIN);
-        $end = strpos($htaccessContent, static::HTACCESS_LIMITER_END) + strlen(static::HTACCESS_LIMITER_END);
+        $begin = strpos($htaccessContent, static::HTACCESS_DELIMITER_BEGIN);
+        $end = strpos($htaccessContent, static::HTACCESS_DELIMITER_END) + strlen(static::HTACCESS_DELIMITER_END);
 
         $htaccessContent = substr($htaccessContent, 0, $begin) . substr($htaccessContent, $end);
         file_put_contents($htaccessFile, $htaccessContent);
@@ -165,19 +165,32 @@ CUSTOM_CONFIG;
      * If the http cache is not disabled for webdav, head requests will
      * be converted to get requests and the webdav server will handle them
      * incorrectly. This behaviour originates from the symfony http cache.
+     *
+     * @return bool
      */
     protected function createConfig()
     {
-        $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);
-        file_put_contents($file, static::CUSTOM_CONFIG);
+        return (bool)file_put_contents($this->getConfigurationFilename(), static::CUSTOM_CONFIG);
     }
 
     /**
      * Removes the custom config file to clean up the system.
+     *
+     * @return bool
      */
     protected function removeConfig()
     {
-        $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);
-        unlink($file);
+        return unlink($this->getConfigurationFilename());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getConfigurationFilename()
+    {
+        return implode(DIRECTORY_SEPARATOR, [
+            $this->container->get('application')->DocPath(),
+            'config_KSK_REMOTE_MAINTENANCE.php',
+        ]);
     }
 }
