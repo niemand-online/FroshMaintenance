@@ -1,7 +1,12 @@
 <?php
 
 use KskRemoteMaintenance\Services\Authentication;
-use Sabre\DAV;
+use Sabre\DAV\Auth\Plugin as AuthPlugin;
+use Sabre\DAV\Exception;
+use Sabre\DAV\FS\Directory;
+use Sabre\DAV\Locks\Backend\File;
+use Sabre\DAV\Locks\Plugin as LocksPlugin;
+use Sabre\DAV\Server;
 
 /**
  * Class Shopware_Controllers_Webdav_Index
@@ -14,50 +19,54 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     private $pluginDir;
 
     /**
+     * @var string
+     */
+    private $cacheDir;
+
+    /**
      * @inheritdoc
      */
     public function preDispatch()
     {
         $this->pluginDir = $this->container->getParameter('ksk_remote_maintenance.plugin_dir');
+
+        $this->cacheDir = implode(DIRECTORY_SEPARATOR, [
+            $this->get('kernel')->getCacheDir(),
+            'ksk_remote_maintenance'
+        ]);
+        @mkdir($this->cacheDir);
     }
 
     /**
-     * @throws DAV\Exception
      * @throws Exception
      */
     public function indexAction()
     {
-        $rootDirectory = new DAV\FS\Directory(Shopware()->DocPath());
+        $this->handleWebdavRequest();
+    }
 
-        // The server object is responsible for making sense out of the WebDAV protocol
-        $server = new DAV\Server($rootDirectory);
-
-        // If your server is not on your webroot, make sure the following line has the
-        // correct information
+    /**
+     * Creates a new webdav server instance and sets it up with the document root,
+     * base uri and cache directory. Plugins for file locks and authentication are
+     * added and then the server instance will be executed. Because the webdav
+     * server sends its own headers, we need to kill the current request afterwards.
+     * Otherwise the Enlight / Symfony framework would sabotage some responses.
+     *
+     * @throws Exception
+     */
+    public function handleWebdavRequest()
+    {
+        $server = new Server(new Directory($this->get('application')->DocPath()));
         $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'webdav', 'index', 'index']));
 
-        $cacheDir = implode(DIRECTORY_SEPARATOR, [
-            $this->container->get('kernel')->getCacheDir(),
-            'ksk_remote_maintenance'
-        ]);
-        @mkdir($cacheDir);
-
-        // The lock manager is reponsible for making sure users don't overwrite
-        // each others changes.
-        $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$cacheDir, 'locks']));
-        $lockPlugin = new DAV\Locks\Plugin($lockBackend);
-        $server->addPlugin($lockPlugin);
+        $lockBackend = new File(implode(DIRECTORY_SEPARATOR, [$this->cacheDir, 'locks']));
+        $server->addPlugin(new LocksPlugin($lockBackend));
 
         /** @var Authentication $authBackend */
         $authBackend = $this->get('ksk_remote_maintenance.services.authentication');
-        $authPlugin = new Dav\Auth\Plugin($authBackend);
+        $server->addPlugin(new AuthPlugin($authBackend));
 
-        // Adding the plugin to the server.
-        $server->addPlugin($authPlugin);
-
-        // All we need to do now, is to fire up the server
         $server->exec();
-
         die;
     }
 }

@@ -49,6 +49,7 @@ CUSTOM_CONFIG;
      */
     public function install(InstallContext $context)
     {
+        $this->restoreHtaccessFile();
         $this->alterHtaccessFile();
         $this->createConfig();
         $this->updateAcl();
@@ -65,6 +66,8 @@ CUSTOM_CONFIG;
     }
 
     /**
+     * Get the absolute path to the .htaccess file
+     *
      * @return string
      */
     protected function getHtaccessFile()
@@ -75,6 +78,9 @@ CUSTOM_CONFIG;
     }
 
     /**
+     * Get the custom addition for the .htaccess file including
+     * the indicators at the beginning and the end of it.
+     *
      * @return string
      */
     protected function getHtaccessCustomContent()
@@ -86,6 +92,11 @@ CUSTOM_CONFIG;
         ]);
     }
 
+    /**
+     * Prepends the .htaccess file with a custom addition that is
+     * necessary so that every webdav request will be handeled by
+     * the webdav module and forwarded to the webdav server.
+     */
     protected function alterHtaccessFile()
     {
         $htaccessFile = $this->getHtaccessFile();
@@ -97,6 +108,11 @@ CUSTOM_CONFIG;
         }
     }
 
+    /**
+     * Restores the .htaccess file to its former state by removing
+     * the custom addition from it. This methods searches for the
+     * addition by finding the delimiters from this classes constants.
+     */
     protected function restoreHtaccessFile()
     {
         $htaccessFile = $this->getHtaccessFile();
@@ -110,6 +126,10 @@ CUSTOM_CONFIG;
     }
 
     /**
+     * Creates a new acl resource for the webdav access. Backend users
+     * will need to have a role with this resource enabled to be able
+     * to access the webdav server.
+     *
      * @return bool
      */
     protected function updateAcl()
@@ -127,6 +147,8 @@ CUSTOM_CONFIG;
     }
 
     /**
+     * Removes the acl resource to clean up the system.
+     *
      * @return bool
      */
     protected function deleteAcl()
@@ -137,12 +159,22 @@ CUSTOM_CONFIG;
         return $acl->deleteResource(static::ACL_RESOURCE_NAME);
     }
 
+    /**
+     * Creates a custom config file for a dedicated webdav environment.
+     * This is necessary to disable the http cache for all webdav requests.
+     * If the http cache is not disabled for webdav, head requests will
+     * be converted to get requests and the webdav server will handle them
+     * incorrectly. This behaviour originates from the symfony http cache.
+     */
     protected function createConfig()
     {
         $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);
         file_put_contents($file, static::CUSTOM_CONFIG);
     }
 
+    /**
+     * Removes the custom config file to clean up the system.
+     */
     protected function removeConfig()
     {
         $file = implode(DIRECTORY_SEPARATOR, [$this->container->get('application')->DocPath(), 'config_KSK_REMOTE_MAINTENANCE.php']);

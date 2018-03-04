@@ -12,6 +12,7 @@
         <service id="ksk_remote_maintenance.subscribers.module" class="KskRemoteMaintenance\Subscribers\Module">
             <argument type="string">%ksk_remote_maintenance.plugin_dir%</argument>
             <argument type="service" id="front"/>
+            <argument type="service" id="pluginlogger"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 
