@@ -3,15 +3,11 @@
 namespace KskRemoteMaintenance;
 
 use Enlight_Exception;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use Shopware;
-use Shopware\Components\ConfigLoader;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware_Components_Acl;
-use UnexpectedValueException;
 
 /**
  * Class KskRemoteMaintenance

@@ -2,10 +2,9 @@
 
 namespace KskRemoteMaintenance\Services;
 
-use KskRemoteMaintenance\KskRemoteMaintenance;
 use Sabre\DAV\Auth\Backend\AbstractBasic;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\User\Role;
+use Shopware\Models\User\User;
 use Shopware_Components_Acl;
 use Shopware_Components_Auth;
 
@@ -47,17 +46,23 @@ class Authentication extends AbstractBasic
     }
 
     /**
-     * TODO use api auth
      * @inheritdoc
      */
     protected function validateUserPass($username, $password)
     {
-        if (!$this->auth->login($username, $password)->isValid()) {
+        $repository = $this->modelManager->getRepository(User::class);
+        $user = $repository->findOneBy(['username' => $username, 'active' => true]);
+
+        if (!$user) {
             return false;
         }
 
-        /** @var Role $role */
-        $role = $this->modelManager->find(Role::class, $this->auth->getIdentity()->roleID);
-        return $this->acl->isAllowed($role->getName(), KskRemoteMaintenance::ACL_RESOURCE_NAME, 'webdav');
+        $apiKey = $user->getApiKey();
+
+        if (empty($apiKey)) {
+            return false;
+        }
+
+        return $apiKey === $password;
     }
 }
