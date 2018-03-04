@@ -54,7 +54,6 @@ CUSTOM_CONFIG;
     public function install(InstallContext $context)
     {
         $this->alterHtaccessFile();
-        mkdir($this->getTemporaryDir());
         $this->createConfig();
         $this->updateAcl();
     }
@@ -65,7 +64,6 @@ CUSTOM_CONFIG;
     public function uninstall(UninstallContext $context)
     {
         $this->restoreHtaccessFile();
-        $this->removeTemporaryDir();
         $this->removeConfig();
         $this->deleteAcl();
     }
@@ -113,37 +111,6 @@ CUSTOM_CONFIG;
 
         $htaccessContent = substr($htaccessContent, 0, $begin) . substr($htaccessContent, $end);
         file_put_contents($htaccessFile, $htaccessContent);
-    }
-
-    /**
-     * @return string
-     */
-    protected function getTemporaryDir()
-    {
-        return implode(DIRECTORY_SEPARATOR, [$this->getPath(), '.tmp']);
-    }
-
-    /**
-     * @return bool
-     */
-    protected function removeTemporaryDir()
-    {
-        try {
-            $iterator = new RecursiveDirectoryIterator($this->getTemporaryDir(), RecursiveDirectoryIterator::SKIP_DOTS);
-            $files = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::CHILD_FIRST);
-        } catch (UnexpectedValueException $exception) {
-            return false;
-        }
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getRealPath());
-            } else {
-                unlink($file->getRealPath());
-            }
-        }
-
-        return rmdir($this->getTemporaryDir());
     }
 
     /**

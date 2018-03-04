@@ -23,6 +23,7 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
 
     /**
      * @throws DAV\Exception
+     * @throws Exception
      */
     public function indexAction()
     {
@@ -35,9 +36,15 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
         // correct information
         $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'webdav', 'index', 'index']));
 
+        $cacheDir = implode(DIRECTORY_SEPARATOR, [
+            $this->container->get('kernel')->getCacheDir(),
+            'ksk_remote_maintenance'
+        ]);
+        @mkdir($cacheDir);
+
         // The lock manager is reponsible for making sure users don't overwrite
         // each others changes.
-        $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$this->pluginDir, '.tmp', 'locks']));
+        $lockBackend = new DAV\Locks\Backend\File(implode(DIRECTORY_SEPARATOR, [$cacheDir, 'locks']));
         $lockPlugin = new DAV\Locks\Plugin($lockBackend);
         $server->addPlugin($lockPlugin);
 
