@@ -24,7 +24,7 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     private $cacheDir;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function preDispatch()
     {
@@ -32,7 +32,7 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
 
         $this->cacheDir = implode(DIRECTORY_SEPARATOR, [
             $this->get('kernel')->getCacheDir(),
-            'ksk_remote_maintenance'
+            'ksk_remote_maintenance',
         ]);
         @mkdir($this->cacheDir);
     }

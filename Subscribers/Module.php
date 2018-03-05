@@ -11,7 +11,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class Module
- * @package KskRemoteMaintenance\Subscribers
  */
 class Module implements SubscriberInterface
 {
@@ -32,9 +31,10 @@ class Module implements SubscriberInterface
 
     /**
      * Module constructor.
-     * @param string $pluginDir
+     *
+     * @param string                   $pluginDir
      * @param Enlight_Controller_Front $front
-     * @param LoggerInterface $logger
+     * @param LoggerInterface          $logger
      */
     public function __construct($pluginDir, Enlight_Controller_Front $front, LoggerInterface $logger)
     {
@@ -44,7 +44,7 @@ class Module implements SubscriberInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents()
     {
@@ -69,7 +69,7 @@ class Module implements SubscriberInterface
         try {
             $this->front->Dispatcher()->addModuleDirectory(implode(DIRECTORY_SEPARATOR, [
                 $this->pluginDir,
-                'Controllers'
+                'Controllers',
             ]));
         } catch (Enlight_Controller_Exception $e) {
             $this->logger->critical($e);

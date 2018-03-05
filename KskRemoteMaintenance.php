@@ -11,7 +11,6 @@ use Shopware_Components_Acl;
 
 /**
  * Class KskRemoteMaintenance
- * @package KskRemoteMaintenance
  */
 class KskRemoteMaintenance extends Plugin
 {
@@ -45,7 +44,7 @@ CUSTOM_CONFIG;
     const ACL_RESOURCE_NAME = 'ksk_remote_maintenance';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function install(InstallContext $context)
     {
@@ -56,7 +55,7 @@ CUSTOM_CONFIG;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function uninstall(UninstallContext $context)
     {
@@ -74,6 +73,7 @@ CUSTOM_CONFIG;
     {
         /** @var Shopware $application */
         $application = $this->container->get('application');
+
         return $application->DocPath() . '.htaccess';
     }
 
@@ -170,7 +170,7 @@ CUSTOM_CONFIG;
      */
     protected function createConfig()
     {
-        return (bool)file_put_contents($this->getConfigurationFilename(), static::CUSTOM_CONFIG);
+        return (bool) file_put_contents($this->getConfigurationFilename(), static::CUSTOM_CONFIG);
     }
 
     /**

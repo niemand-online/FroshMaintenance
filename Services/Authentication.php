@@ -11,7 +11,6 @@ use Shopware_Components_Acl;
 
 /**
  * Class Authentication
- * @package KskRemoteMaintenance\Services
  */
 class Authentication extends AbstractBasic
 {
@@ -27,8 +26,9 @@ class Authentication extends AbstractBasic
 
     /**
      * Authentication constructor.
+     *
      * @param Shopware_Components_Acl $acl
-     * @param ModelManager $modelManager
+     * @param ModelManager            $modelManager
      */
     public function __construct(
         Shopware_Components_Acl $acl,
@@ -39,7 +39,7 @@ class Authentication extends AbstractBasic
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function validateUserPass($username, $password)
     {
