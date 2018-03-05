@@ -4,7 +4,7 @@
     <label>WebDAV</label>
     <label lang="de">WebDAV</label>
 
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <license>MIT</license>
     <link>https://www.ksk-agentur.de/</link>
     <author>KSK-Agentur</author>
@@ -14,5 +14,8 @@
         <changes>Feature: WebDAV interface</changes>
         <changes>Feature: Authentication via API access</changes>
         <changes>Feature: Permission via ACL privilege</changes>
+    </changelog>
+    <changelog version="1.0.1">
+        <changes>Bugfix: Installation does not destroy .htaccess anymore</changes>
     </changelog>
 </plugin>

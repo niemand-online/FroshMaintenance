@@ -119,7 +119,13 @@ CUSTOM_CONFIG;
         $htaccessContent = file_get_contents($htaccessFile);
 
         $begin = strpos($htaccessContent, static::HTACCESS_DELIMITER_BEGIN);
-        $end = strpos($htaccessContent, static::HTACCESS_DELIMITER_END) + strlen(static::HTACCESS_DELIMITER_END);
+        $end = strpos($htaccessContent, static::HTACCESS_DELIMITER_END, $begin);
+
+        if ($begin === false || $end === false) {
+            return;
+        }
+
+        $end += strlen(static::HTACCESS_DELIMITER_END);
 
         $htaccessContent = substr($htaccessContent, 0, $begin) . substr($htaccessContent, $end);
         file_put_contents($htaccessFile, $htaccessContent);
