@@ -7,6 +7,7 @@ use Sabre\DAV\FS\Directory;
 use Sabre\DAV\Locks\Backend\File;
 use Sabre\DAV\Locks\Plugin as LocksPlugin;
 use Sabre\DAV\Server;
+use Shopware\Components\Plugin\ConfigReader;
 
 /**
  * Class Shopware_Controllers_Webdav_Index
@@ -24,6 +25,11 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     private $cacheDir;
 
     /**
+     * @var array
+     */
+    private $config;
+
+    /**
      * {@inheritdoc}
      */
     public function preDispatch()
@@ -35,6 +41,10 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
             'ksk_remote_maintenance',
         ]);
         @mkdir($this->cacheDir);
+
+        /** @var ConfigReader $configReader */
+        $configReader = $this->get('shopware.plugin.config_reader');
+        $this->config = $configReader->getByPluginName('KskRemoteMaintenance');
     }
 
     /**
@@ -42,7 +52,11 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
      */
     public function indexAction()
     {
-        $this->handleWebdavRequest();
+        $server = $this->createWebdavServer();
+
+        $this->handleWebdavRequest($server);
+
+        die;
     }
 
     /**
@@ -52,13 +66,12 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
      * server sends its own headers, we need to kill the current request afterwards.
      * Otherwise the Enlight / Symfony framework would sabotage some responses.
      *
+     * @param Server $server
+     *
      * @throws Exception
      */
-    public function handleWebdavRequest()
+    protected function handleWebdavRequest(Server $server)
     {
-        $server = new Server(new Directory($this->get('application')->DocPath()));
-        $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'webdav', 'index', 'index']));
-
         $lockBackend = new File(implode(DIRECTORY_SEPARATOR, [$this->cacheDir, 'locks']));
         $server->addPlugin(new LocksPlugin($lockBackend));
 
@@ -67,6 +80,26 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
         $server->addPlugin(new AuthPlugin($authBackend));
 
         $server->exec();
-        die;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return Server
+     */
+    protected function createWebdavServer()
+    {
+        $server = new Server(new Directory($this->getDocumentRoot()));
+        $server->setBaseUri(implode('/', [$this->Request()->getBasePath(), 'webdav', 'index', 'index']));
+
+        return $server;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDocumentRoot()
+    {
+        return $this->get('application')->DocPath() . ltrim($this->config['document_root'], DIRECTORY_SEPARATOR);
     }
 }
