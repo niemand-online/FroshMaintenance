@@ -1,5 +1,8 @@
 {
     "require": {
         "sabre/dav": "~3.2.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.10"
     }
 }
