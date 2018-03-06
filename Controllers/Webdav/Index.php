@@ -1,5 +1,6 @@
 <?php
 
+use GuzzleHttp\Exception\TransferException;
 use KskRemoteMaintenance\Services\Authentication;
 use Sabre\DAV\Auth\Plugin as AuthPlugin;
 use Sabre\DAV\Exception;
@@ -53,8 +54,18 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     public function indexAction()
     {
         $server = $this->createWebdavServer();
+        $fileLocation = realpath($this->getDocumentRoot() . DIRECTORY_SEPARATOR . $server->getRequestUri());
+
+        if ($this->isSafeModeEnabled()) {
+            $originalContents = file_get_contents($fileLocation);
+        }
 
         $this->handleWebdavRequest($server);
+
+        if ($this->isSafeModeEnabled() && !$this->isFileReachable($server->getRequestUri())) {
+            file_put_contents($fileLocation, $originalContents);
+            http_response_code(409);
+        }
 
         die;
     }
@@ -101,5 +112,33 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     protected function getDocumentRoot()
     {
         return $this->get('application')->DocPath() . ltrim($this->config['document_root'], DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isSafeModeEnabled()
+    {
+        return ((bool) $this->config['safe_mode']) && in_array($this->Request()->getMethod(), [
+            'PUT',
+            'POST',
+            'DELETE',
+        ]);
+    }
+
+    /**
+     * @param string $uri
+     *
+     * @return bool
+     */
+    protected function isFileReachable($uri)
+    {
+        try {
+            $response = $this->get('ksk_remote_maintenance.services.webdav_client')->read($uri);
+        } catch (TransferException $exception) {
+            return false;
+        }
+
+        return $response->getStatusCode() === 200;
     }
 }

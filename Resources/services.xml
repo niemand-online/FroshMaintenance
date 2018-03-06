@@ -16,5 +16,11 @@
             <tag name="shopware.event_subscriber"/>
         </service>
 
+        <service id="ksk_remote_maintenance.services.webdav_client" class="KskRemoteMaintenance\Services\WebdavClient">
+            <argument id="guzzle_http_client_factory" type="service"/>
+            <argument id="router" type="service"/>
+            <argument id="front" type="service"/>
+        </service>
+
     </services>
 </container>

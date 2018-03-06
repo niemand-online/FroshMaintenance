@@ -3,6 +3,11 @@
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.4/engine/Shopware/Components/Plugin/schema/config.xsd">
 
     <elements>
+        <element type="boolean">
+            <name>safe_mode</name>
+            <label>Safe Mode</label>
+            <value>1</value>
+        </element>
         <element>
             <name>document_root</name>
             <label>Document Root</label>
