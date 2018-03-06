@@ -2,9 +2,8 @@
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.4/engine/Shopware/Components/Plugin/schema/plugin.xsd">
     <label>WebDAV</label>
-    <label lang="de">WebDAV</label>
 
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <license>MIT</license>
     <link>https://www.ksk-agentur.de/</link>
     <author>KSK-Agentur</author>
@@ -17,5 +16,9 @@
     </changelog>
     <changelog version="1.0.1">
         <changes>Bugfix: Installation does not destroy .htaccess anymore</changes>
+    </changelog>
+    <changelog version="1.1.0">
+        <changes>Feature: Configurable document root</changes>
+        <changes>Feature: Optional `safe mode` to keep webdav access intact</changes>
     </changelog>
 </plugin>
