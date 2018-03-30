@@ -1,6 +1,6 @@
 <?php
 
-namespace KskRemoteMaintenance;
+namespace FroshMaintenance;
 
 use Enlight_Exception;
 use Shopware;
@@ -10,17 +10,17 @@ use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware_Components_Acl;
 
 /**
- * Class KskRemoteMaintenance
+ * Class FroshMaintenance
  */
-class KskRemoteMaintenance extends Plugin
+class FroshMaintenance extends Plugin
 {
-    const HTACCESS_DELIMITER_BEGIN = '# BEGIN KskRemoteMaintenance';
+    const HTACCESS_DELIMITER_BEGIN = '# BEGIN FroshMaintenance';
 
-    const HTACCESS_DELIMITER_END = '# END KskRemoteMaintenance' . PHP_EOL . PHP_EOL;
+    const HTACCESS_DELIMITER_END = '# END FroshMaintenance' . PHP_EOL . PHP_EOL;
 
     const HTACCESS_CUSTOM = <<<'HTACCESS'
 <IfModule mod_env.c>
-SetEnvIf Request_URI "^.*webdav/index/index.*$" SHOPWARE_ENV=KSK_REMOTE_MAINTENANCE
+SetEnvIf Request_URI "^.*webdav/index/index.*$" SHOPWARE_ENV=FROSH_MAINTENANCE
 </IfModule>
 <IfModule mod_rewrite.c>
 RewriteEngine on
@@ -41,7 +41,7 @@ return array_replace_recursive($config, [
 ]);
 CUSTOM_CONFIG;
 
-    const ACL_RESOURCE_NAME = 'ksk_remote_maintenance';
+    const ACL_RESOURCE_NAME = 'FROSH_MAINTENANCE';
 
     /**
      * {@inheritdoc}
@@ -196,7 +196,7 @@ CUSTOM_CONFIG;
     {
         return implode(DIRECTORY_SEPARATOR, [
             $this->container->get('application')->DocPath(),
-            'config_KSK_REMOTE_MAINTENANCE.php',
+            'config_FROSH_MAINTENANCE.php',
         ]);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace KskRemoteMaintenance\Services;
+namespace FroshMaintenance\Services;
 
 use Enlight_Controller_Front;
 use Exception;

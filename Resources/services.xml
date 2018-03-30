@@ -4,19 +4,19 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="ksk_remote_maintenance.services.authentication" class="KskRemoteMaintenance\Services\Authentication">
+        <service id="frosh_maintenance.services.authentication" class="FroshMaintenance\Services\Authentication">
             <argument type="service" id="acl"/>
             <argument type="service" id="models"/>
         </service>
 
-        <service id="ksk_remote_maintenance.subscribers.module" class="KskRemoteMaintenance\Subscribers\Module">
-            <argument type="string">%ksk_remote_maintenance.plugin_dir%</argument>
+        <service id="frosh_maintenance.subscribers.module" class="FroshMaintenance\Subscribers\Module">
+            <argument type="string">%frosh_maintenance.plugin_dir%</argument>
             <argument type="service" id="front"/>
             <argument type="service" id="pluginlogger"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 
-        <service id="ksk_remote_maintenance.services.webdav_client" class="KskRemoteMaintenance\Services\WebdavClient">
+        <service id="frosh_maintenance.services.webdav_client" class="FroshMaintenance\Services\WebdavClient">
             <argument id="guzzle_http_client_factory" type="service"/>
             <argument id="router" type="service"/>
             <argument id="front" type="service"/>

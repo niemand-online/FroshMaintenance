@@ -1,7 +1,7 @@
 <?php
 
 use GuzzleHttp\Exception\TransferException;
-use KskRemoteMaintenance\Services\Authentication;
+use FroshMaintenance\Services\Authentication;
 use Sabre\DAV\Auth\Plugin as AuthPlugin;
 use Sabre\DAV\Exception;
 use Sabre\DAV\FS\Directory;
@@ -35,17 +35,17 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
      */
     public function preDispatch()
     {
-        $this->pluginDir = $this->container->getParameter('ksk_remote_maintenance.plugin_dir');
+        $this->pluginDir = $this->container->getParameter('frosh_maintenance.plugin_dir');
 
         $this->cacheDir = implode(DIRECTORY_SEPARATOR, [
             $this->get('kernel')->getCacheDir(),
-            'ksk_remote_maintenance',
+            'frosh_maintenance',
         ]);
         @mkdir($this->cacheDir);
 
         /** @var ConfigReader $configReader */
         $configReader = $this->get('shopware.plugin.config_reader');
-        $this->config = $configReader->getByPluginName('KskRemoteMaintenance');
+        $this->config = $configReader->getByPluginName('FroshMaintenance');
     }
 
     /**
@@ -87,7 +87,7 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
         $server->addPlugin(new LocksPlugin($lockBackend));
 
         /** @var Authentication $authBackend */
-        $authBackend = $this->get('ksk_remote_maintenance.services.authentication');
+        $authBackend = $this->get('frosh_maintenance.services.authentication');
         $server->addPlugin(new AuthPlugin($authBackend));
 
         $server->exec();
@@ -134,7 +134,7 @@ class Shopware_Controllers_Webdav_Index extends Enlight_Controller_Action
     protected function isFileReachable($uri)
     {
         try {
-            $response = $this->get('ksk_remote_maintenance.services.webdav_client')->read($uri);
+            $response = $this->get('frosh_maintenance.services.webdav_client')->read($uri);
         } catch (TransferException $exception) {
             return false;
         }

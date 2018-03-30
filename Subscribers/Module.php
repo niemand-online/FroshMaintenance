@@ -1,6 +1,6 @@
 <?php
 
-namespace KskRemoteMaintenance\Subscribers;
+namespace FroshMaintenance\Subscribers;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_Exception;

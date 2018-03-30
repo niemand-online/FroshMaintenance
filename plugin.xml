@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.4/engine/Shopware/Components/Plugin/schema/plugin.xsd">
-    <label>WebDAV</label>
+    <label>Maintenance</label>
 
-    <version>1.1.0</version>
+    <version>1.2.0</version>
+    <copyright>Friends of Shopware</copyright>
     <license>MIT</license>
-    <link>https://www.ksk-agentur.de/</link>
-    <author>KSK-Agentur</author>
+    <link>https://friendsofshopware.github.io/</link>
+    <author>Friends of Shopware</author>
     <compatibility minVersion="5.3.0"/>
 
     <changelog version="1.0.0">
@@ -20,5 +21,8 @@
     <changelog version="1.1.0">
         <changes>Feature: Configurable document root</changes>
         <changes>Feature: Optional `safe mode` to keep webdav access intact</changes>
+    </changelog>
+    <changelog version="1.2.0">
+        <changes>Improvement: Now a member of FROSH</changes>
     </changelog>
 </plugin>

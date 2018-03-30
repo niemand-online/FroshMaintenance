@@ -14,3 +14,7 @@
 
 * Feature: Configurable document root
 * Feature: Optional `safe mode` to keep webdav access intact
+
+## v1.2.0
+
+* Improvement: Now a member of FROSH

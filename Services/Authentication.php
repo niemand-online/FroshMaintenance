@@ -1,8 +1,8 @@
 <?php
 
-namespace KskRemoteMaintenance\Services;
+namespace FroshMaintenance\Services;
 
-use KskRemoteMaintenance\KskRemoteMaintenance;
+use FroshMaintenance\FroshMaintenance;
 use Sabre\DAV\Auth\Backend\AbstractBasic;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\User\Role;
@@ -60,6 +60,6 @@ class Authentication extends AbstractBasic
         $role = $this->modelManager->find(Role::class, $user->getRoleId());
 
         return $apiKey === $password
-            && $this->acl->isAllowed($role->getName(), KskRemoteMaintenance::ACL_RESOURCE_NAME, 'webdav');
+            && $this->acl->isAllowed($role->getName(), FroshMaintenance::ACL_RESOURCE_NAME, 'webdav');
     }
 }
